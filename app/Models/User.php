@@ -11,6 +11,23 @@ class User extends Authenticatable
 {
     use HasFactory, Notifiable;
 
+
+    public $table = "users";
+
+    //priviliges
+    public function paper()
+    {
+        return $this->belongsToMany("App\Paper");
+    }
+
+    //belong to inner dep
+    public function innerdepartment()
+    {
+        return $this->belongsTo("App\Innerdepartment");
+    }
+
+
+    
     /**
      * The attributes that are mass assignable.
      *
