@@ -10,7 +10,7 @@ class OutterDepartment extends Model
     use HasFactory;
 
 
-    public $table="outterdepartments";
+    public $table="outter_departments";
 
     //belong to dep
     public function department(){

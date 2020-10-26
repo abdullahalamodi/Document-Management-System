@@ -1,18 +1,19 @@
-<!DOCTYPE html>
-<html lang="en">
+@extends('voyager::master')
+@section('css')
+{{-- <link rel="stylesheet" href="{{ asset('css/app.css') }}"> --}}
+@endsection
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+@section('page_header')
+    we
+@endsection
+@section('page_title')
+@yield('page_title')
+@endsection
 
-    <title>@yield('title')</title>
+@section('content')
+@yield('content')
+@endsection
 
-    @yield('style')
-</head>
-
-<body>
-    @yield('content')
-</body>
-
-</html>
+@section('javascript')
+{{-- <script type="text/javascript" src="{{asset('js/app.js') }}"></script> --}}
+@endsection

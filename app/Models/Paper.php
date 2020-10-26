@@ -11,17 +11,18 @@ class Paper extends Model
 
 
     public $table="papers";
-    public $timestamps = false;
+    protected $fillable = ['id','title','discription',
+            'image','date','note'];
 
     
     //create paper
     public function department_paper(){
-        return $this->hasMany("App\Department_paper");
+        return $this->hasMany("App\Models\paperDepartment");
     }
 
     //tages
     public function paper_tag(){
-        return $this->hasMany("App\Paper_tag");
+        return $this->hasMany("App\Models\PaperTag");
     }
 
     //attachmnet
@@ -35,12 +36,12 @@ class Paper extends Model
     }
 
     public function tags(){
-        return $this->belongsToMany("App\Tag");
+        return $this->belongsToMany("App\Models\Tag");
     }
 
     
     public function department(){
-        return $this->belongsToMany("App\Department");
+        return $this->hasMany("App\Models\Department");
     }
 
     

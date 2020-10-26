@@ -4,10 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
 
-class GPaper extends Model
+class LetterM extends Model
 {
     use HasFactory;
-    protected $table = "g_papers";
-    protected $fillable = ['id','category','paper_id'];
+
+    public $table = "letter_ms";
+
+    
 }

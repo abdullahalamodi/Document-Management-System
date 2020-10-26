@@ -14,4 +14,8 @@ class Tag extends Model
     public function papers(){
         return $this->belongsToMany("App\Paper");
     }
+
+    public function paperTags(){
+        return $this->hasMany("App\Models\PaperTag");
+    }
 }

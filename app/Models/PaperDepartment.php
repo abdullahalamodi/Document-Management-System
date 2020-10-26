@@ -10,8 +10,8 @@ class PaperDepartment extends Model
     use HasFactory;
 
     public $table ="paper_department";
-    public $timestamps = false;
- 
+
+    protected $fillable = ['id','paper_id','department_id','type'];
  
     public function department(){
         return $this->belongsTo("App\Models\Department");

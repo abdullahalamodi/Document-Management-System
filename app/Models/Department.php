@@ -11,6 +11,7 @@ class Department extends Model
 
     public $table="departments";
     public $timestamps = false;
+    
 
 
     //to paper

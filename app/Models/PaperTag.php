@@ -11,13 +11,13 @@ class PaperTag extends Model
 
 
     public $table = "paper_tag";
-    public $timestamp = false;
+    protected $fillable = ['id','paper_id','tag_id'];
 
     public function paper(){
-        return $this->belongsTo("App\Paper");
+        return $this->belongsTo("App\models\Paper");
     }
 
     public function tag(){
-        return $this->belongsTo("App\Tag");
+        return $this->belongsTo("App\Models\Tag");
     }
 }
