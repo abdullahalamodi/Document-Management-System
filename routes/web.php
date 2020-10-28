@@ -18,12 +18,19 @@ Route::group(['prefix' => '/'], function () {
     Voyager::routes();
 });
 
-Route::get('/test',"testController@test");
+Route::get('/test', "testController@test");
 
-Route::get('dms/reports',"reportsController@main");
+//reports
+Route::get('dms/reports', "reportsController@main");
 
-Route::get('dms/treatments',"reportsController@main");
 
+//treatments
+Route::get('dms/treatments', "treatmentsController@main");
+Route::post('dms/treatments/direct', "treatmentsController@direct");
+Route::post('dms/treatments/attach', "treatmentsController@attach");
+
+
+//dashbord
 Route::group(['prefix' => 'dms'], function () {
     Voyager::routes();
 });

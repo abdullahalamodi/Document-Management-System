@@ -9,13 +9,19 @@
         </h1>
         @can('add', app($dataType->model_name))
 {{-- redirect to letter model  --}}
-            <a href="{{ route('voyager.letter-ms.create') }}" class="btn btn-success btn-add-new">
+            <a href="{{ route('voyager.papers.create') }}" class="btn btn-success btn-add-new">
                 <i class="voyager-plus"></i> <span>{{ __('voyager::generic.add_new') }}</span>
             </a>
         @endcan
-        @can('delete', app($dataType->model_name))
+        {{-- @can('delete', app($dataType->model_name))
             @include('voyager::partials.bulk-delete')
-        @endcan
+        @endcan --}}
+        <a href="{{ route('voyager.papers.index') }}" class="btn btn-primary btn-add-new">
+            <i class="voyager-documentation"></i> <span>All</span>
+        </a>
+        <a href="{{ route('voyager.g-papers.index') }}" class="btn btn-primary btn-add-new">
+            <i class="voyager-logbook"></i> <span>General Papers</span>
+        </a>
         @can('edit', app($dataType->model_name))
             @if(isset($dataType->order_column) && isset($dataType->order_display_column))
                 <a href="{{ route('voyager.'.$dataType->slug.'.order') }}" class="btn btn-primary btn-add-new">
@@ -251,12 +257,16 @@
                                                 @endif
                                             </td>
                                         @endforeach
+
+
                                         <td class="no-sort no-click bread-actions">
-                                            @foreach($actions as $action)
-                                                @if (!method_exists($action, 'massAction'))
-                                                    @include('voyager::bread.partials.actions', ['action' => $action])
-                                                @endif
-                                            @endforeach
+                                            <a href="#" title="direct" class="btn btn-sm btn-success pull-right">direct</a>
+                                            
+                                            <a href="{{ url('/papers/'.$data->paper_id.'/edit') }}" title="edit" 
+                                                class="btn btn-sm btn-primary pull-right" style="margin: 5px" >edit</a>
+
+                                            <a href="{{ url('/papers/'.$data->paper_id) }}" title="view" 
+                                                class="btn btn-sm btn-warning pull-right" >view</a>
                                         </td>
                                     </tr>
                                     @endforeach

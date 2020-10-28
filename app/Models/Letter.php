@@ -11,7 +11,8 @@ class Letter extends Model
     use HasFactory;
 
     public $table = "letters";
-
+    protected $fillable = ['type','state','period','paper_id'];
+    
     //scope
     public function scopeCurrentUser($query)
     {

@@ -9,13 +9,21 @@
         </h1>
         @can('add', app($dataType->model_name))
 {{-- redirect to g paper model  --}}
-            <a href="{{ route('voyager.g-papers-m.create') }}" class="btn btn-success btn-add-new">
+            <a href="{{ route('voyager.papers.create') }}" class="btn btn-success btn-add-new">
                 <i class="voyager-plus"></i> <span>{{ __('voyager::generic.add_new') }}</span>
             </a>
         @endcan
-        @can('delete', app($dataType->model_name))
+        {{-- @can('delete', app($dataType->model_name))
             @include('voyager::partials.bulk-delete')
-        @endcan
+        @endcan --}}
+
+       
+        <a href="{{ route('voyager.papers.index') }}" class="btn btn-primary btn-add-new">
+            <i class="voyager-documentation"></i> <span>All</span>
+        </a>
+        <a href="{{ route('voyager.letters.index') }}" class="btn btn-primary btn-add-new">
+            <i class="voyager-paper-plane"></i> <span>Letters</span>
+        </a>
         @can('edit', app($dataType->model_name))
             @if(isset($dataType->order_column) && isset($dataType->order_display_column))
                 <a href="{{ route('voyager.'.$dataType->slug.'.order') }}" class="btn btn-primary btn-add-new">
@@ -81,11 +89,12 @@
                             <table id="dataTable" class="table table-hover">
                                 <thead>
                                     <tr>
-                                        @if($showCheckboxColumn)
+                                        {{-- @if($showCheckboxColumn)
                                             <th class="dt-not-orderable">
                                                 <input type="checkbox" class="select_all">
                                             </th>
-                                        @endif
+                                        @endif --}}
+
                                         @foreach($dataType->browseRows as $row)
                                         <th>
                                             @if ($isServerSide && $row->type !== 'relationship')
@@ -110,11 +119,12 @@
                                 <tbody>
                                     @foreach($dataTypeContent as $data)
                                     <tr>
-                                        @if($showCheckboxColumn)
+                                        {{-- @if($showCheckboxColumn)
                                             <td>
                                                 <input type="checkbox" name="row_id" id="checkbox_{{ $data->getKey() }}" value="{{ $data->getKey() }}">
                                             </td>
-                                        @endif
+                                        @endif --}}
+                                        
                                         @foreach($dataType->browseRows as $row)
                                             @php
                                             if ($data->{$row->field.'_browse'}) {
@@ -254,15 +264,20 @@
                                             </td>
                                         @endforeach
 {{-- change actions edit view  --}}
-                                        <td class="no-sort no-click bread-actions">
-                                            {{-- @foreach($actions as $action)
+                                        {{-- <td class="no-sort no-click bread-actions">
+                                            @foreach($actions as $action)
                                                 @if (!method_exists($action, 'massAction'))
                                                     @include('voyager::bread.partials.actions', ['action' => $action])
                                                 @endif --}}
-                                            <a href="{{url('http://localhost:8000/dms/g-papers-m/'.$data->id.'/edit')}}"
-                                                 title="edit" class="btn btn-sm btn-primary pull-right edit">edit</a>
-                                            {{-- @endforeach --}}
-                                        </td>
+                                            {{-- @endforeach
+                                        </td> --}}
+                                                <td class="no-sort no-click bread-actions">
+                                                    <a href="{{ url('/papers/'.$data->paper_id.'/edit') }}" title="edit" 
+                                                        class="btn btn-sm btn-primary pull-right" style="margin: 5px" >edit</a>
+        
+                                                    <a href="{{ url('/papers/'.$data->paper_id) }}" title="view" 
+                                                        class="btn btn-sm btn-warning pull-right" >view</a>
+                                                </td>
                                     </tr>
                                     @endforeach
                                 </tbody>

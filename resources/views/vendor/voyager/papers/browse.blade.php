@@ -8,16 +8,23 @@
             <i class="{{ $dataType->icon }}"></i> {{ $dataType->getTranslatedAttribute('display_name_plural') }}
         </h1>
 
-        {{-- // no delete or add in all papers we need to specify --}}
-        {{-- @can('add', app($dataType->model_name)) --}}
-{{-- redirect to letter model  --}}
-            {{-- <a href="{{ route('voyager.letter-ms.create') }}" class="btn btn-success btn-add-new">
+        {{-- // no delete in all papers we need to specify --}}
+        {{-- redirect to letter model  --}}
+        @can('add', app($dataType->model_name))
+            <a href="{{route('voyager.'.$dataType->slug.'.create') }}" class="btn btn-success btn-add-new">
                 <i class="voyager-plus"></i> <span>{{ __('voyager::generic.add_new') }}</span>
             </a>
-        @endcan --}}
+        @endcan
         {{-- @can('delete', app($dataType->model_name))
             @include('voyager::partials.bulk-delete')
         @endcan --}}
+
+        <a href="{{ route('voyager.letters.index') }}" class="btn btn-primary btn-add-new">
+            <i class="voyager-paper-plane"></i> <span>Letters</span>
+        </a>
+        <a href="{{ route('voyager.g-papers.index') }}" class="btn btn-primary btn-add-new">
+            <i class="voyager-logbook"></i> <span>General Papers</span>
+        </a>
         @can('edit', app($dataType->model_name))
             @if(isset($dataType->order_column) && isset($dataType->order_display_column))
                 <a href="{{ route('voyager.'.$dataType->slug.'.order') }}" class="btn btn-primary btn-add-new">
@@ -104,9 +111,6 @@
                                             @endif
                                         </th>
                                         @endforeach
-        {{-- is Litter header --}}
-                                        <th class="action dt-not-orderable"> is Letter</th>
-
                                         <th class="actions text-right dt-not-orderable">{{ __('voyager::generic.actions') }}</th>
                                     </tr>
                                 </thead>
@@ -256,24 +260,13 @@
                                                 @endif
                                             </td>
                                         @endforeach
-            {{-- set is letter state --}}
-                                        @if (true)
-                                        <td class="action">
-                                            Yes
-                                        </td>
-                                        @else
-                                        <td class="action">
-                                            No
-                                        </td>
-                                        @endif
-                                       
                                         <td class="no-sort no-click bread-actions">
         {{-- hear we put just view button --}}
-                                            {{-- @foreach($actions as $action)
+                                            @foreach($actions as $action)
                                                 @if (!method_exists($action, 'massAction'))
                                                     @include('voyager::bread.partials.actions', ['action' => $action])
                                                 @endif
-                                            @endforeach --}}
+                                            @endforeach
                                         </td>
                                     </tr>
                                     @endforeach

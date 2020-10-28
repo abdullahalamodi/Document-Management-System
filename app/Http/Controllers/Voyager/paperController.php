@@ -4,25 +4,32 @@ namespace App\Http\Controllers\Voyager;
 
 use App\Models\Department;
 use App\Models\GPaper;
-use App\Models\GPaperM;
+use App\Models\GPaperCategory;
 use App\Models\Letter;
 use App\Models\Paper;
 use App\Models\PaperDepartment;
 use App\Models\PaperTag;
 use App\Models\Tag;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use TCG\Voyager\Database\Schema\SchemaManager;
 use TCG\Voyager\Events\BreadDataAdded;
+use TCG\Voyager\Events\BreadDataDeleted;
+use TCG\Voyager\Events\BreadDataRestored;
 use TCG\Voyager\Events\BreadDataUpdated;
+use TCG\Voyager\Events\BreadImagesDeleted;
 use TCG\Voyager\Facades\Voyager;
 use TCG\Voyager\Http\Controllers\Traits\BreadRelationshipParser;
 use TCG\Voyager\Http\Controllers\VoyagerBaseController;
 
-class gPaperMController extends VoyagerBaseController
+//taging , display , privileges 
+class paperController extends VoyagerBaseController
+
 {
     use BreadRelationshipParser;
+
     //***************************************
     //               ____
     //              |  _ \
@@ -166,7 +173,6 @@ class gPaperMController extends VoyagerBaseController
         if (view()->exists("voyager::$slug.browse")) {
             $view = "voyager::$slug.browse";
         }
-
         return Voyager::view($view, compact(
             'actions',
             'dataType',
@@ -199,9 +205,6 @@ class gPaperMController extends VoyagerBaseController
 
     public function show(Request $request, $id)
     {
-
-        dd($request);
-
         $slug = $this->getSlug($request);
 
         $dataType = Voyager::model('DataType')->where('slug', '=', $slug)->first();
@@ -268,49 +271,49 @@ class gPaperMController extends VoyagerBaseController
         $slug = $this->getSlug($request);
 
         $dataType = Voyager::model('DataType')->where('slug', '=', $slug)->first();
-        //git date from tables
-        $gPaper = GPaper::where('id',$id)->first();
-        //dd($gPaper);
-        $paper = Paper::where('id',$gPaper->paper_id)->first();
+        $paper = Paper::where('id', $id)->first();
         $allDepartments = Department::all();
         $allTags = Tag::all();
+        $categories = GPaperCategory::all();
 
+        $stats = collect(["one" => 1, "tow" => 2, "three" => 3, "four" => 4]);
+
+
+        $gPaper = GPaper::where('paper_id', $id)->first();
+        if ($gPaper != null) {
+            $isLetter = 0; //meaning false
+            $otherData = $gPaper;
+        } else {
+            $letter = Letter::where('paper_id', $id)->first();
+            $isLetter = 1; //meaing true
+            $otherData = $letter;
+            //dd($letter);
+        }
         //currunt data
-        $currunt_dep = $allDepartments->where('id',
-        $paper->department_paper->where('type',1)->first()->department->id);
+        $currunt_dep = $allDepartments->where(
+            'id',
+            $paper->department_paper->where('type', 1)->first()->department->id
+        );
         $currunt_tags = $paper->tags;
-        $paper_id = $paper->id;
+        //dd($gPaper);
 
 
-        //dd($currunt_tags);
 
-        // if (strlen($dataType->model_name) != 0) {
-        //     $model = app($dataType->model_name);
+        if (strlen($dataType->model_name) != 0) {
+            $model = app($dataType->model_name);
 
-        //     // Use withTrashed() if model uses SoftDeletes and if toggle is selected
-        //     if ($model && in_array(SoftDeletes::class, class_uses_recursive($model))) {
-        //         $model = $model->withTrashed();
-        //     }
-        //     if ($dataType->scope && $dataType->scope != '' && method_exists($model, 'scope' . ucfirst($dataType->scope))) {
-        //         $model = $model->{$dataType->scope}();
-        //     }
-        //     $dataTypeContent = call_user_func([$model, 'findOrFail'], $id);
-
-
-        // } else {
-        //     // If Model doest exist, get data from table name
-        //     $dataTypeContent = DB::table($dataType->name)->where('id', $id)->first();
-        // }
-        $dataTypeContent = new GPaperM();
-        //paper data
-        $dataTypeContent->title = $paper->title;
-        $dataTypeContent->image = $paper->image;
-        $dataTypeContent->discription = $paper->discription;
-        $dataTypeContent->date = $paper->date;
-        $dataTypeContent->note = $paper->note;
-
-        //general paper data
-        $dataTypeContent->category = $gPaper->category;
+            // Use withTrashed() if model uses SoftDeletes and if toggle is selected
+            if ($model && in_array(SoftDeletes::class, class_uses_recursive($model))) {
+                $model = $model->withTrashed();
+            }
+            if ($dataType->scope && $dataType->scope != '' && method_exists($model, 'scope' . ucfirst($dataType->scope))) {
+                $model = $model->{$dataType->scope}();
+            }
+            $dataTypeContent = call_user_func([$model, 'findOrFail'], $id);
+        } else {
+            // If Model doest exist, get data from table name
+            $dataTypeContent = DB::table($dataType->name)->where('id', $id)->first();
+        }
 
         foreach ($dataType->editRows as $key => $row) {
             $dataType->editRows[$key]['col_width'] = isset($row->details->width) ? $row->details->width : 100;
@@ -334,15 +337,25 @@ class gPaperMController extends VoyagerBaseController
             $view = "voyager::$slug.edit-add";
         }
 
-        //dd($dataTypeContent);
-        return Voyager::view($view, compact('dataType', 'dataTypeContent', 'isModelTranslatable'
-    ,'allDepartments','allTags','currunt_dep','currunt_tags','paper_id'));
+        return Voyager::view($view, compact(
+            'dataType',
+            'dataTypeContent',
+            'isModelTranslatable',
+            'allDepartments',
+            'allTags',
+            'currunt_dep',
+            'currunt_tags',
+            'isLetter',
+            'otherData',
+            'categories',
+            'stats'
+        ));
     }
 
     // POST BR(E)AD
     public function update(Request $request, $id)
     {
-        dd($request);
+        //dd($id);
 
         $slug = $this->getSlug($request);
 
@@ -366,49 +379,51 @@ class gPaperMController extends VoyagerBaseController
 
         // Validate fields with ajax
         $val = $this->validateBread($request->all(), $dataType->editRows, $dataType->name, $id)->validate();
-       // $this->insertUpdateData($request, $slug, $dataType->editRows, $data);
+        $this->insertUpdateData($request, $slug, $dataType->editRows, $data);
 
         event(new BreadDataUpdated($dataType, $data));
 
-        
-        DB::table('papers')
-        ->where('id',)
+        if ($request->isLetter == 1) {
+            DB::table('letters')
+                ->where('paper_id',$id)
+                ->updateOrInsert(
+                    ['type' => $request->type],
+                    ['state' => $request->state],
+                    ['period' => $request->period],
+                    ['paper_id' => $data->id],
+                );
+                //dd( $request->period);
+        } else {
+            DB::table('g_papers')
+                ->where('paper_id', $id)
+                ->updateOrInsert(
+                    ['category' => $request->category],
+                    ['paper_id' => $data->id],
+                );
+        }
+
+        DB::table('papers')->where('id',$data->id)
         ->updateOrInsert(
-            ['title' => $data->title],
-            ['discription' => $data->description],
-            ['image' => $data->image],
-            ['date' => $data->date],
-            ['note' => $data->note]
-            );
+            ['is_letter' => $request->isLetter],
+        );
 
-            $paper = Paper::latest()->first();
-            $gPaperId = GPaper::where('paper_id',)->first()->id;
-
-            DB::table('papers')
-            ->where('id',$gPaperId)
-            ->updateOrInsert(
-            ['category' => $data->category],
-            ['paper_id' => $paper->id]
-            );
-
-//department 
-        PaperDepartment::where('paper_id',$paper->id)->delete();
+        //department
+        PaperDepartment::where('paper_id',$id)->delete();
         if($request->department){
                 PaperDepartment::create([
-                    'paper_id' => $paper->id,
-                    'department_id' => $request->department[0],
+                    'paper_id' => $id,
+                    'department_id' => $request->department,
                     'type' => 1,
                 ]);
             }
         //tags
-        PaperTag::where('paper_id',$paper->id)->delete();
+        PaperTag::where('paper_id',$id)->delete();
         if($request->tags){
             foreach ($request->tags as $tag) {
                 PaperTag::create([
-                    'paper_id' => $paper->id,
+                    'paper_id' => $id,
                     'tag_id' => $tag,
-                ]
-                );
+                    ]);
             }
         }
 
@@ -444,10 +459,14 @@ class gPaperMController extends VoyagerBaseController
         $dataType = Voyager::model('DataType')->where('slug', '=', $slug)->first();
         $allDepartments = Department::all();
         $allTags = Tag::all();
+        $isLetter = 1;
 
+        $otherData = null;
         $currunt_dep = collect([]);
-
         $currunt_tags = collect([]);
+        $categories = GPaperCategory::all();
+        $stats = collect(["11" => 1, "22" => 2, "33" => 3, "44" => 4]);
+
         // Check permission
         $this->authorize('add', app($dataType->model_name));
 
@@ -469,12 +488,24 @@ class gPaperMController extends VoyagerBaseController
         $this->eagerLoadRelations($dataTypeContent, $dataType, 'add', $isModelTranslatable);
 
         $view = 'voyager::bread.edit-add';
+
         if (view()->exists("voyager::$slug.edit-add")) {
             $view = "voyager::$slug.edit-add";
         }
 
-        return Voyager::view($view, compact('dataType', 'dataTypeContent',
-         'isModelTranslatable','allDepartments','allTags','currunt_dep','currunt_tags'));
+        return Voyager::view($view, compact(
+            'dataType',
+            'dataTypeContent',
+            'isModelTranslatable',
+            'allDepartments',
+            'allTags',
+            'currunt_dep',
+            'currunt_tags',
+            'isLetter',
+            'otherData',
+            'categories',
+            'stats'
+        ));
     }
 
     /**
@@ -486,7 +517,7 @@ class gPaperMController extends VoyagerBaseController
      */
     public function store(Request $request)
     {
-        dd($request);
+        //dd($request->all());
         $slug = $this->getSlug($request);
 
         $dataType = Voyager::model('DataType')->where('slug', '=', $slug)->first();
@@ -498,48 +529,46 @@ class gPaperMController extends VoyagerBaseController
         $val = $this->validateBread($request->all(), $dataType->addRows)->validate();
         $data = $this->insertUpdateData($request, $slug, $dataType->addRows, new $dataType->model_name());
 
-        //event(new BreadDataAdded($dataType, $data));
-        //dd($data);
-        Paper::create([
-            'title' => $data->title,
-            'discription' => $data->description,
-            'image' => $data->image,
-            'date' => $data->date,
-            'note' => $data->note,
-            'created_at' => $data->created_at,
-            'updated_at' => $data->updated_at,
+        event(new BreadDataAdded($dataType, $data));
+
+        
+        if ($request->isLetter == 1) {
+            Letter::create([
+                'type' => $request->type,
+                'state' => $request->state,
+                'period' => $request->period,
+                'paper_id' => $data->id,
             ]);
-
-            $paper = Paper::latest()->first();
-
-        GPaper::create([
-            'category' => $data->category,
-            'paper_id' => $paper->id,
+        } else {
+            GPaper::create([
+                'category' => $request->category,
+                'paper_id' => $data->id,
             ]);
+        }
 
-//department 
-        if($request->department){
-                PaperDepartment::create([
-                    'paper_id' => $paper->id,
-                    'department_id' => $request->department[0],
-                    'type' => 1,
-                ]);
-            }
+        DB::table('papers')->where('id',$data->id)
+        ->updateOrInsert(
+            ['is_letter' => $request->isLetter],
+        );
+
+        //department 
+        if ($request->department) {
+            PaperDepartment::create([
+                'paper_id' => $data->id,
+                'department_id' => $request->department[0],
+                'type' => 1,
+            ]);
+        }
         //tags
-        if($request->tags){
+        if ($request->tags) {
             foreach ($request->tags as $tag) {
                 PaperTag::create([
-                    'paper_id' => $paper->id,
+                    'paper_id' => $data->id,
                     'tag_id' => $tag,
-                ]
-                );
+                ]);
             }
         }
 
-        //delete containner and return to papers
-        DB::table('g_paper_ms')->delete();
-        // return redirect()->route();
-        
         if (!$request->has('_tagging')) {
             if (auth()->user()->can('browse', $data)) {
                 $redirect = redirect()->route("voyager.{$dataType->slug}.index");
@@ -611,6 +640,8 @@ class gPaperMController extends VoyagerBaseController
         if ($res) {
             event(new BreadDataDeleted($dataType, $data));
         }
+
+        
 
         return redirect()->route("voyager.{$dataType->slug}.index")->with($data);
     }
@@ -928,6 +959,7 @@ class gPaperMController extends VoyagerBaseController
 
         // Check permission
         $this->authorize('edit', app($dataType->model_name));
+
 
         $model = app($dataType->model_name);
 
